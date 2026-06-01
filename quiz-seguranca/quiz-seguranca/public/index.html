@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz de Segurança da Informação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-50:#E6F1FB; --blue-100:#B5D4F4; --blue-200:#85B7EB;
+      --blue-600:#185FA5; --blue-800:#0C447C; --blue-900:#042C53;
+      --teal-50:#E1F5EE; --teal-100:#9FE1CB; --teal-200:#5DCAA5;
+      --teal-600:#0F6E56; --teal-800:#085041;
+      --green-50:#EAF3DE; --green-600:#3B6D11; --green-800:#27500A;
+      --red-50:#FCEBEB;   --red-600:#A32D2D;   --red-800:#791F1F;
+      --amber-50:#FAEEDA; --amber-600:#854F0B;
+      --gray-50:#F1EFE8;  --gray-100:#D3D1C7;  --gray-600:#5F5E5A;
+      --purple-50:#EEEDFE; --purple-100:#CECBF6;
+      --purple-600:#534AB7; --purple-800:#3C3489;
+      --bg:#f4f6fa; --surface:#ffffff;
+      --text:#1a1a2e; --text-muted:#5a6072;
+      --border:rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family:'Space Grotesk',sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh;
+      display:flex; align-items:flex-start; justify-content:center;
+      padding:2rem 1rem 3rem;
+    }
+
+    .app { width:100%; max-width:620px; }
+    .screen { display:none; }
+    .screen.active { display:block; }
+
+    /* ── TELA INICIAL ── */
+    .hero-header {
+      background:var(--blue-800); border-radius:18px;
+      padding:2rem 1.75rem 1.75rem; margin-bottom:1.25rem;
+      position:relative; overflow:hidden;
+    }
+    .hero-header::before {
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:140px; height:140px; border-radius:50%;
+      background:var(--blue-600); opacity:0.35;
+    }
+    .hero-header::after {
+      content:''; position:absolute; bottom:-25px; left:42%;
+      width:90px; height:90px; border-radius:50%;
+      background:var(--teal-600); opacity:0.3;
+    }
+    .hero-tag {
+      display:inline-flex; align-items:center; gap:5px;
+      background:var(--teal-200); color:var(--teal-800);
+      font-size:11px; font-weight:700;
+      text-transform:uppercase; letter-spacing:1.5px;
+      padding:4px 10px; border-radius:6px;
+      margin-bottom:0.75rem; position:relative; z-index:1;
+    }
+    .hero-title {
+      font-size:24px; font-weight:700; color:#fff;
+      line-height:1.2; margin-bottom:0.5rem;
+      position:relative; z-index:1;
+    }
+    .hero-subtitle {
+      font-size:14px; color:var(--blue-100);
+      line-height:1.5; position:relative; z-index:1;
+    }
+
+    .info-grid {
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:10px; margin-bottom:1.25rem;
+    }
+    .info-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; padding:0.875rem; text-align:center;
+    }
+    .info-card i { font-size:22px; color:var(--blue-600); margin-bottom:6px; display:block; }
+    .info-card .num { font-size:22px; font-weight:700; color:var(--text); }
+    .info-card .lbl { font-size:11px; color:var(--text-muted); margin-top:2px; }
+
+    .last-session {
+      background:var(--purple-50); border:1px solid var(--purple-100);
+      border-radius:10px; padding:0.875rem 1rem;
+      margin-bottom:1.25rem; display:none;
+    }
+    .last-session.visible { display:block; }
+    .last-session-title {
+      font-size:11px; font-weight:700; color:var(--purple-800);
+      text-transform:uppercase; letter-spacing:0.8px;
+      margin-bottom:0.5rem;
+      display:flex; align-items:center; gap:6px;
+    }
+    .last-session-row { display:flex; justify-content:space-between; align-items:center; }
+    .last-session-info { font-size:13px; color:var(--purple-600); }
+    .last-session-score {
+      font-size:20px; font-weight:700; color:var(--purple-800);
+      font-family:'IBM Plex Mono',monospace;
+    }
+    .last-session-date { font-size:11px; color:var(--purple-600); margin-top:4px; }
+
+    .api-status {
+      display:flex; align-items:center; gap:7px;
+      font-size:12px; color:var(--text-muted);
+      margin-bottom:1.25rem; padding:8px 12px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px;
+    }
+    .api-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:#ccc; flex-shrink:0;
+      transition:background 0.3s;
+    }
+    .api-dot.ok  { background:#3B6D11; }
+    .api-dot.err { background:#A32D2D; }
+
+    .btn-start {
+      width:100%; padding:14px;
+      background:var(--blue-800); color:#fff;
+      border:none; border-radius:10px;
+      font-family:'Space Grotesk',sans-serif;
+      font-size:16px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:background 0.15s, transform 0.1s;
+    }
+    .btn-start:hover  { background:var(--blue-900); }
+    .btn-start:active { transform:scale(0.98); }
+
+    /* ── TELA QUIZ ── */
+    .quiz-topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:1rem;
+    }
+    .quiz-counter {
+      font-size:12px; font-weight:600;
+      color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;
+    }
+    .quiz-score-live {
+      font-family:'IBM Plex Mono',monospace;
+      font-size:13px; font-weight:500; color:var(--blue-600);
+      background:var(--blue-50); padding:4px 10px; border-radius:20px;
+    }
+
+    .progress-bar {
+      height:5px; background:var(--gray-100);
+      border-radius:3px; margin-bottom:1.5rem; overflow:hidden;
+    }
+    .progress-fill {
+      height:100%; background:var(--blue-600);
+      border-radius:3px; transition:width 0.35s ease;
+    }
+
+    .category-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:11px; font-weight:700; padding:4px 10px;
+      border-radius:6px; margin-bottom:0.75rem;
+      text-transform:uppercase; letter-spacing:0.8px;
+    }
+
+    .question-text {
+      font-size:17px; font-weight:600; color:var(--text);
+      line-height:1.45; margin-bottom:1.25rem;
+    }
+
+    .options-list { display:flex; flex-direction:column; gap:8px; margin-bottom:1.25rem; }
+
+    .option-btn {
+      width:100%; text-align:left; padding:12px 14px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; font-family:'Space Grotesk',sans-serif;
+      font-size:14px; color:var(--text); cursor:pointer;
+      display:flex; align-items:flex-start; gap:10px;
+      transition:border-color 0.12s, background 0.12s;
+    }
+    .option-btn:hover:not(:disabled) { border-color:var(--blue-200); background:var(--blue-50); }
+    .option-btn .opt-letter {
+      min-width:24px; height:24px; border-radius:50%;
+      background:var(--gray-50); border:1px solid var(--gray-100);
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px; font-weight:700; color:var(--gray-600);
+      flex-shrink:0; margin-top:1px;
+    }
+    .option-btn.correct { background:var(--green-50); border-color:var(--green-600); color:var(--green-800); }
+    .option-btn.correct .opt-letter { background:var(--green-600); color:#fff; border-color:var(--green-600); }
+    .option-btn.wrong   { background:var(--red-50);   border-color:var(--red-600);   color:var(--red-800);   }
+    .option-btn.wrong   .opt-letter { background:var(--red-600); color:#fff; border-color:var(--red-600); }
+    .option-btn:disabled { cursor:not-allowed; }
+
+    .feedback-box {
+      border-radius:10px; padding:0.875rem 1rem;
+      margin-bottom:1rem; display:none;
+    }
+    .feedback-box.visible { display:block; }
+    .feedback-label {
+      font-size:12px; font-weight:700;
+      text-transform:uppercase; letter-spacing:1px; margin-bottom:0.25rem;
+    }
+    .feedback-text { font-size:13px; line-height:1.55; color:var(--text-muted); }
+
+    .btn-next {
+      width:100%; padding:12px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; font-family:'Space Grotesk',sans-serif;
+      font-size:14px; font-weight:600; color:var(--text);
+      cursor:pointer; display:none;
+      transition:background 0.12s, transform 0.1s;
+    }
+    .btn-next:hover  { background:var(--gray-50); }
+    .btn-next:active { transform:scale(0.98); }
+    .btn-next.visible { display:block; }
+
+    /* ── TELA RESULTADO ── */
+    .result-header {
+      border-radius:16px; padding:1.75rem 1.5rem;
+      text-align:center; margin-bottom:1.25rem;
+    }
+    .result-emoji    { font-size:44px; margin-bottom:0.75rem; }
+    .result-title    { font-size:20px; font-weight:700; margin-bottom:0.35rem; }
+    .result-subtitle { font-size:14px; line-height:1.5; }
+
+    .score-display {
+      display:flex; align-items:baseline; justify-content:center; gap:6px;
+      margin:1.25rem 0;
+    }
+    .score-big {
+      font-family:'IBM Plex Mono',monospace;
+      font-size:52px; font-weight:700; color:var(--blue-800);
+    }
+    .score-denom { font-size:22px; color:var(--text-muted); font-weight:400; }
+
+    .stats-row {
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:10px; margin-bottom:1.25rem;
+    }
+    .stat-card { background:var(--gray-50); border-radius:10px; padding:0.875rem; text-align:center; }
+    .stat-num  { font-size:24px; font-weight:700; color:var(--text); }
+    .stat-lbl  { font-size:11px; color:var(--text-muted); margin-top:3px; }
+
+    .db-panel {
+      background:#1e2235; border-radius:12px;
+      padding:1rem 1.125rem; margin-bottom:1.25rem;
+    }
+    .db-title {
+      font-size:12px; font-weight:600; color:#7dd3c8;
+      text-transform:uppercase; letter-spacing:0.8px;
+      margin-bottom:0.75rem;
+      display:flex; align-items:center; gap:7px;
+    }
+    .db-dot { width:8px; height:8px; border-radius:50%; background:#5DCAA5; display:inline-block; }
+    .db-badge {
+      margin-left:auto; font-size:10px; font-weight:700;
+      padding:2px 8px; border-radius:4px;
+      background:#085041; color:#9FE1CB;
+    }
+    .db-json {
+      font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#a8d8d1;
+      white-space:pre-wrap; word-break:break-all;
+      line-height:1.65; max-height:220px; overflow-y:auto;
+    }
+    .db-json .key  { color:#7dd3c8; }
+    .db-json .str  { color:#f7c948; }
+    .db-json .num  { color:#90d98e; }
+    .db-json .bool { color:#f98b7e; }
+
+    .save-status {
+      font-size:12px; margin-top:8px; padding:6px 10px;
+      border-radius:6px; display:none;
+    }
+    .save-status.ok  { display:block; background:#EAF3DE; color:#27500A; }
+    .save-status.err { display:block; background:#FCEBEB; color:#791F1F; }
+
+    .btn-retry {
+      width:100%; padding:14px;
+      background:var(--blue-800); color:#fff;
+      border:none; border-radius:10px;
+      font-family:'Space Grotesk',sans-serif;
+      font-size:16px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:background 0.15s, transform 0.1s;
+    }
+    .btn-retry:hover  { background:var(--blue-900); }
+    .btn-retry:active { transform:scale(0.98); }
+
+    @media(max-width:480px){
+      body { padding:1rem 0.75rem 2rem; }
+      .hero-title   { font-size:20px; }
+      .question-text{ font-size:15px; }
+      .score-big    { font-size:42px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ TELA INICIAL ══ -->
+  <div class="screen active" id="screen-start">
+    <div class="hero-header">
+      <div class="hero-tag"><i class="ti ti-shield-lock"></i> Segurança Digital</div>
+      <div class="hero-title">Quiz de Segurança da Informação</div>
+      <div class="hero-subtitle">Teste seus conhecimentos sobre proteção de dados, golpes online e boas práticas digitais.</div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <i class="ti ti-help-circle"></i>
+        <div class="num">10</div><div class="lbl">Perguntas</div>
+      </div>
+      <div class="info-card">
+        <i class="ti ti-category"></i>
+        <div class="num">5</div><div class="lbl">Temas</div>
+      </div>
+      <div class="info-card">
+        <i class="ti ti-clock"></i>
+        <div class="num">~5</div><div class="lbl">Minutos</div>
+      </div>
+    </div>
+
+    <!-- status da conexão com a API -->
+    <div class="api-status">
+      <span class="api-dot" id="api-dot"></span>
+      <span id="api-status-text">Verificando conexão com o servidor...</span>
+    </div>
+
+    <div class="last-session" id="last-session-card">
+      <div class="last-session-title">
+        <i class="ti ti-database" style="font-size:14px;"></i>
+        Último registro — MongoDB
+      </div>
+      <div class="last-session-row">
+        <div class="last-session-info" id="last-session-info">–</div>
+        <div class="last-session-score" id="last-session-score">–</div>
+      </div>
+      <div class="last-session-date" id="last-session-date">–</div>
+    </div>
+
+    <button class="btn-start" onclick="startQuiz()">
+      <i class="ti ti-player-play"></i> Iniciar Quiz
+    </button>
+  </div>
+
+  <!-- ══ TELA QUIZ ══ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-topbar">
+      <div class="quiz-counter" id="q-counter">Questão 1 de 10</div>
+      <div class="quiz-score-live" id="q-score-live">0 pontos</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:10%"></div>
+    </div>
+    <div class="category-badge" id="q-category-badge"></div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options-list" id="q-options"></div>
+    <div class="feedback-box" id="feedback-box">
+      <div class="feedback-label" id="feedback-label"></div>
+      <div class="feedback-text" id="feedback-text"></div>
+    </div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Próxima questão →</button>
+  </div>
+
+  <!-- ══ TELA RESULTADO ══ -->
+  <div class="screen" id="screen-result">
+    <div class="result-header" id="result-header">
+      <div class="result-emoji" id="result-emoji"></div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-subtitle" id="result-subtitle"></div>
+    </div>
+
+    <div class="score-display">
+      <div class="score-big" id="score-big">0</div>
+      <div class="score-denom">/ 10</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-correct" style="color:var(--green-600)">0</div>
+        <div class="stat-lbl">Corretas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-wrong" style="color:var(--red-600)">0</div>
+        <div class="stat-lbl">Erradas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-pct">0%</div>
+        <div class="stat-lbl">Aproveitamento</div>
+      </div>
+    </div>
+
+    <div class="db-panel">
+      <div class="db-title">
+        <span class="db-dot"></span>
+        Registro salvo no MongoDB
+        <span class="db-badge" id="db-badge">aguardando...</span>
+      </div>
+      <div class="db-json" id="db-json-view">Salvando...</div>
+      <div class="save-status" id="save-status"></div>
+    </div>
+
+    <button class="btn-retry" onclick="restartQuiz()">
+      <i class="ti ti-refresh"></i> Tentar novamente
+    </button>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURAÇÃO — aponta para a sua API Node.js
+   Em produção substitua pela URL do seu servidor, ex:
+   const API_BASE = 'https://quiz-seguranca.seudominio.com/api';
+═══════════════════════════════════════════════════════════ */
+const API_BASE = '/api';   // relativo: funciona quando o HTML é servido pelo Express
+
+/* ═══════════════════════════════════════════════════════════
+   BANCO DE QUESTÕES
+═══════════════════════════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    category:'Senhas', categoryColor:'blue', icon:'ti-lock',
+    question:'Qual das opções a seguir representa uma senha MAIS segura?',
+    options:['meuaniversario2000','123456','G#7kpZ!mR2@qW','Senha@123'],
+    correct:2,
+    explanation:'Senhas seguras combinam letras maiúsculas, minúsculas, números e símbolos com pelo menos 12 caracteres. "G#7kpZ!mR2@qW" é aleatória e difícil de adivinhar. Evite datas, nomes e sequências óbvias.'
+  },
+  {
+    category:'Phishing', categoryColor:'amber', icon:'ti-fish',
+    question:'Você recebe um e-mail do "seu banco" pedindo para clicar num link e atualizar seus dados urgentemente. O que você deve fazer?',
+    options:['Clicar no link e atualizar os dados rapidamente','Ignorar o e-mail e entrar no site do banco digitando o endereço no navegador','Responder o e-mail pedindo confirmação','Encaminhar para amigos para alertá-los'],
+    correct:1,
+    explanation:'Phishing usa urgência para induzir cliques em links falsos. Bancos nunca pedem dados por e-mail. Sempre acesse serviços financeiros digitando o endereço oficial no navegador, nunca por links recebidos.'
+  },
+  {
+    category:'Redes Sociais', categoryColor:'pink', icon:'ti-share',
+    question:'Qual informação é MAIS arriscada de publicar nas redes sociais?',
+    options:['Foto de uma paisagem bonita','Sua localização em tempo real enquanto viaja','Uma receita de bolo que você gostou','Opinião sobre um livro que leu'],
+    correct:1,
+    explanation:'Compartilhar localização em tempo real revela que você está fora de casa e seu paradeiro exato — informações exploradas por criminosos. Divulgue apenas após retornar ao local, se necessário.'
+  },
+  {
+    category:'Engenharia Social', categoryColor:'coral', icon:'ti-user-question',
+    question:'Um "técnico de suporte" liga dizendo que seu computador está infectado e pede acesso remoto para resolver. O que fazer?',
+    options:['Fornecer o acesso, pois ele parece legítimo','Pedir o número de chamado e ligar de volta para a empresa oficial','Deixar ele acessar o computador mas ficar observando','Compartilhar sua senha para ele verificar'],
+    correct:1,
+    explanation:'Engenharia social manipula pessoas para obter acesso não autorizado. Empresas legítimas não ligam pedindo acesso remoto sem solicitação prévia. Sempre verifique a identidade contatando a empresa pelo número oficial.'
+  },
+  {
+    category:'Senhas', categoryColor:'blue', icon:'ti-lock',
+    question:'O que é autenticação de dois fatores (2FA)?',
+    options:['Ter duas senhas diferentes para a mesma conta','Uma segunda camada de verificação além da senha, como um código no celular','Fazer login duas vezes por dia','Usar letras maiúsculas e minúsculas na senha'],
+    correct:1,
+    explanation:'O 2FA exige algo que você sabe (senha) + algo que você tem (celular/token). Mesmo que alguém descubra sua senha, não consegue acessar sua conta sem o segundo fator. Ative sempre que disponível.'
+  },
+  {
+    category:'Phishing', categoryColor:'amber', icon:'ti-fish',
+    question:'Como identificar um site falso que imita um site legítimo?',
+    options:['Pelo visual idêntico ao original','Verificando se a URL começa com "http" (sem o "s")','Pela velocidade de carregamento da página','Pela quantidade de anúncios exibidos'],
+    correct:1,
+    explanation:'Sites seguros usam HTTPS (cadeado na barra de endereços). URLs suspeitas como "banco-seguro.com.br.login.net" são sinais de alerta. Verifique sempre o endereço completo antes de inserir qualquer dado.'
+  },
+  {
+    category:'Dados Pessoais', categoryColor:'teal', icon:'ti-id',
+    question:'Você vai usar um computador público (lan house, biblioteca). Qual cuidado é essencial?',
+    options:['Salvar a senha no navegador para facilitar','Sempre fazer logout de todas as contas ao terminar','Deixar a aba aberta para continuar depois','Usar o modo de navegação padrão'],
+    correct:1,
+    explanation:'Em computadores públicos, sempre faça logout de todas as contas. Use o modo anônimo/privado do navegador e nunca salve senhas. Dados não apagados ficam acessíveis ao próximo usuário.'
+  },
+  {
+    category:'Engenharia Social', categoryColor:'coral', icon:'ti-user-question',
+    question:'Você recebe uma mensagem de um "amigo" no WhatsApp pedindo dinheiro emprestado urgentemente. O que fazer?',
+    options:['Transferir imediatamente, pois é seu amigo','Ligar para o número original do amigo para confirmar','Responder a mensagem pedindo mais detalhes','Pedir o PIX e depois verificar'],
+    correct:1,
+    explanation:'Golpistas clonam contas do WhatsApp e pedem dinheiro a contatos. Sempre confirme por chamada de voz ou vídeo no número que você já tem salvo — nunca pelo número que enviou a mensagem.'
+  },
+  {
+    category:'Dados Pessoais', categoryColor:'teal', icon:'ti-id',
+    question:'O que é a LGPD (Lei Geral de Proteção de Dados)?',
+    options:['Uma lei que proíbe o uso de internet por menores','Uma legislação que regula como empresas coletam, armazenam e usam dados pessoais','Um programa antivírus governamental','Uma lei que libera compartilhamento de dados entre empresas'],
+    correct:1,
+    explanation:'A LGPD (Lei 13.709/2018) protege seus dados pessoais. Empresas precisam de sua autorização para coletá-los e devem informar como são usados. Você tem o direito de pedir exclusão dos seus dados.'
+  },
+  {
+    category:'Redes Sociais', categoryColor:'pink', icon:'ti-share',
+    question:'Qual é a melhor prática ao configurar a privacidade de suas redes sociais?',
+    options:['Deixar perfil público para mais interações','Restringir quem pode ver seus posts apenas para conhecidos','Compartilhar localização automática para facilitar encontros','Aceitar todos os pedidos de amizade para expandir a rede'],
+    correct:1,
+    explanation:'Perfis públicos expõem suas informações a estranhos. Restrinja a visibilidade para pessoas que você realmente conhece, revise as configurações de privacidade periodicamente e desative compartilhamento automático de localização.'
+  }
+];
+
+const CAT_STYLES = {
+  blue:  { bg:'#E6F1FB', color:'#0C447C', border:'#B5D4F4' },
+  amber: { bg:'#FAEEDA', color:'#854F0B', border:'#FAC775' },
+  pink:  { bg:'#FBEAF0', color:'#72243E', border:'#F4C0D1' },
+  coral: { bg:'#FAECE7', color:'#712B13', border:'#F5C4B3' },
+  teal:  { bg:'#E1F5EE', color:'#085041', border:'#9FE1CB' },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   CAMADA DE API — substitui completamente o localStorage
+═══════════════════════════════════════════════════════════ */
+
+// Substitui: localStorage.setItem(STORAGE_KEY, JSON.stringify(record))
+async function dbSave(record) {
+  const res = await fetch(API_BASE + '/sessoes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record)
+  });
+  if (!res.ok) throw new Error('Falha ao salvar: ' + res.status);
+  const data = await res.json();
+  return data.sessao;   // retorna o documento inserido no MongoDB (com _id real)
+}
+
+// Substitui: JSON.parse(localStorage.getItem(STORAGE_KEY))
+async function dbGetUltima() {
+  const res = await fetch(API_BASE + '/sessoes/ultima');
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('Falha ao buscar: ' + res.status);
+  return res.json();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ESTADO DO QUIZ
+═══════════════════════════════════════════════════════════ */
+let currentQ = 0, score = 0, answered = false, results = [];
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITÁRIOS
+═══════════════════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } catch(e){ return iso; }
+}
+
+function syntaxHighlight(json) {
+  return json
+    .replace(/("[\w_]+")(\s*:)/g, '<span class="key">$1</span>$2')
+    .replace(/:\s*("([^"]*)")/g,  ': <span class="str">"$2"</span>')
+    .replace(/:\s*(\d+\.?\d*)/g,  ': <span class="num">$1</span>')
+    .replace(/:\s*(true|false)/g, ': <span class="bool">$1</span>');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VERIFICAR STATUS DA API
+═══════════════════════════════════════════════════════════ */
+async function checkApiStatus() {
+  const dot  = document.getElementById('api-dot');
+  const text = document.getElementById('api-status-text');
+  try {
+    const res = await fetch(API_BASE + '/sessoes/ultima');
+    if (res.ok || res.status === 404) {
+      dot.className  = 'api-dot ok';
+      text.textContent = 'Servidor conectado — MongoDB ativo';
+    } else throw new Error();
+  } catch {
+    dot.className  = 'api-dot err';
+    text.textContent = 'Servidor offline — verifique se o Node.js está rodando';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TELA INICIAL — carrega última sessão do MongoDB
+═══════════════════════════════════════════════════════════ */
+async function loadLastSession() {
+  try {
+    const last = await dbGetUltima();   // ← GET /api/sessoes/ultima
+    if (!last) return;
+    document.getElementById('last-session-card').classList.add('visible');
+    document.getElementById('last-session-info').textContent =
+      last.acertos + ' acertos de ' + last.total_questoes + ' questões';
+    document.getElementById('last-session-score').textContent = last.aproveitamento + '%';
+    document.getElementById('last-session-date').textContent =
+      'Realizado em ' + formatDate(last.data_hora);
+  } catch(e) {
+    console.warn('Não foi possível carregar última sessão:', e.message);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INICIAR QUIZ
+═══════════════════════════════════════════════════════════ */
+function startQuiz() {
+  currentQ = 0; score = 0; answered = false; results = [];
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDERIZAR QUESTÃO
+═══════════════════════════════════════════════════════════ */
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const s = CAT_STYLES[q.categoryColor];
+
+  document.getElementById('q-counter').textContent =
+    'Questão ' + (currentQ+1) + ' de ' + QUESTIONS.length;
+  document.getElementById('q-score-live').textContent =
+    score + ' ponto' + (score===1?'':'s');
+  document.getElementById('progress-fill').style.width =
+    ((currentQ+1)/QUESTIONS.length*100) + '%';
+
+  const badge = document.getElementById('q-category-badge');
+  badge.style.cssText = 'background:'+s.bg+';color:'+s.color+';border:1px solid '+s.border;
+  badge.innerHTML = '<i class="ti '+q.icon+'"></i> '+q.category;
+
+  document.getElementById('q-text').textContent = q.question;
+
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = '';
+  ['A','B','C','D'].forEach((letter, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = '<span class="opt-letter">'+letter+'</span><span>'+q.options[i]+'</span>';
+    btn.onclick = () => selectAnswer(i);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('feedback-box').classList.remove('visible');
+  document.getElementById('btn-next').classList.remove('visible');
+  answered = false;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SELECIONAR RESPOSTA
+═══════════════════════════════════════════════════════════ */
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = QUESTIONS[currentQ];
+  const isCorrect = idx === q.correct;
+  if (isCorrect) score++;
+
+  document.querySelectorAll('.option-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx)  btn.classList.add('wrong');
+  });
+
+  results.push({ questao: currentQ+1, categoria: q.category, correta: isCorrect });
+
+  const fbox = document.getElementById('feedback-box');
+  const flbl = document.getElementById('feedback-label');
+
+  if (isCorrect) {
+    fbox.style.cssText = 'background:#EAF3DE;border:1px solid #3B6D11;display:block';
+    flbl.style.color = '#3B6D11';
+    flbl.textContent = '✓ Resposta correta!';
+  } else {
+    fbox.style.cssText = 'background:#FCEBEB;border:1px solid #A32D2D;display:block';
+    flbl.style.color = '#A32D2D';
+    flbl.textContent = '✗ Resposta incorreta';
+  }
+  document.getElementById('feedback-text').textContent = q.explanation;
+  fbox.classList.add('visible');
+  document.getElementById('q-score-live').textContent = score + ' ponto'+(score===1?'':'s');
+
+  const btnNext = document.getElementById('btn-next');
+  btnNext.textContent = currentQ < QUESTIONS.length-1 ? 'Próxima questão →' : 'Ver resultado →';
+  btnNext.classList.add('visible');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRÓXIMA QUESTÃO
+═══════════════════════════════════════════════════════════ */
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= QUESTIONS.length) showResult();
+  else renderQuestion();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXIBIR RESULTADO + SALVAR NO MONGODB via API
+═══════════════════════════════════════════════════════════ */
+async function showResult() {
+  const total = QUESTIONS.length;
+  const pct   = Math.round((score / total) * 100);
+  const erros = total - score;
+
+  let emoji, title, subtitle, headerBg, headerColor;
+  if (pct >= 80) {
+    emoji='🛡️'; title='Excelente! Você está bem protegido.';
+    subtitle='Seu conhecimento sobre segurança digital está acima da média. Continue praticando!';
+    headerBg='#E1F5EE'; headerColor='#085041';
+  } else if (pct >= 50) {
+    emoji='🔐'; title='Bom resultado! Ainda há espaço para aprender.';
+    subtitle='Você já possui uma base razoável, mas alguns temas merecem atenção especial.';
+    headerBg='#E6F1FB'; headerColor='#0C447C';
+  } else {
+    emoji='⚠️'; title='Atenção! Seu conhecimento precisa ser reforçado.';
+    subtitle='Recomendamos revisar os temas do quiz para se proteger melhor no ambiente digital.';
+    headerBg='#FAEEDA'; headerColor='#854F0B';
+  }
+
+  document.getElementById('result-emoji').textContent    = emoji;
+  document.getElementById('result-title').textContent    = title;
+  document.getElementById('result-subtitle').textContent = subtitle;
+  document.getElementById('result-subtitle').style.color = headerColor;
+  const rh = document.getElementById('result-header');
+  rh.style.background = headerBg; rh.style.color = headerColor;
+
+  document.getElementById('score-big').textContent    = score;
+  document.getElementById('stat-correct').textContent = score;
+  document.getElementById('stat-wrong').textContent   = erros;
+  document.getElementById('stat-pct').textContent     = pct + '%';
+
+  showScreen('screen-result');
+
+  // ── Monta o payload (mesmo formato do MongoDB) ──────────
+  const payload = {
+    acertos:        score,
+    erros:          erros,
+    total_questoes: total,
+    aproveitamento: pct,
+    nivel:          pct >= 80 ? 'avançado' : pct >= 50 ? 'intermediário' : 'iniciante',
+    detalhes:       results
+  };
+
+  document.getElementById('db-json-view').textContent = 'Enviando para o MongoDB...';
+  document.getElementById('db-badge').textContent     = 'salvando...';
+
+  try {
+    // ── SUBSTITUIÇÃO DO ITEM 3 ──────────────────────────
+    // ANTES:  localStorage.setItem(STORAGE_KEY, JSON.stringify(record))
+    // AGORA:  POST /api/sessoes  →  Node.js  →  mongoose.create()  →  MongoDB
+    const sessaoSalva = await dbSave(payload);
+
+    document.getElementById('db-json-view').innerHTML =
+      syntaxHighlight(JSON.stringify(sessaoSalva, null, 2));
+    document.getElementById('db-badge').textContent   = '✓ salvo no MongoDB';
+    document.getElementById('db-badge').style.cssText =
+      'margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#27500A;color:#C0DD97';
+
+    const st = document.getElementById('save-status');
+    st.className   = 'save-status ok';
+    st.textContent = '✓ Registro salvo com sucesso no MongoDB! ID: ' + sessaoSalva._id;
+
+  } catch(err) {
+    console.error('Erro ao salvar no MongoDB:', err);
+    document.getElementById('db-json-view').textContent =
+      '// Erro ao conectar com a API.\n// Verifique se o servidor Node.js está rodando.\n\n' +
+      JSON.stringify(payload, null, 2);
+    document.getElementById('db-badge').textContent   = '✗ erro ao salvar';
+    document.getElementById('db-badge').style.cssText =
+      'margin-left:auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#791F1F;color:#F7C1C1';
+
+    const st = document.getElementById('save-status');
+    st.className   = 'save-status err';
+    st.textContent = '✗ Não foi possível salvar. Servidor offline ou MongoDB desconectado.';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REINICIAR
+═══════════════════════════════════════════════════════════ */
+async function restartQuiz() {
+  showScreen('screen-start');
+  await loadLastSession();
+}
+
+/* ── INIT ─────────────────────────────────────────────── */
+checkApiStatus();
+loadLastSession();
+</script>
+</body>
+</html>
